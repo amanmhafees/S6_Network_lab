@@ -1,0 +1,20 @@
+Server
+
+Socket()->socket(AF_INET,SOCK_STREAM,0)
+server_addr.sin_family=AF_INET
+server_addr.sin_port=htons(2000)
+server_addr.sin_addr.s_addr=inet_addr('127.0.0.1)
+Bind()->bind(socket_desc,(struct sockaddr*)&server_addr,sizeof(server_addr))
+Listen()->listen(sock_desc,1)
+client_size=sizeof(client_addr)
+client_sock=accept()->accept(socket_desc,(struct sockaddr*)&client-addr,&client_size)
+recv(client_sock,client_message,sizeof(client_message),0)
+send(client_sock,server_message,strlen(server_message),0)
+
+
+Client
+
+Socket()->socket(AF_INET,SOCK_STREAM,0)
+connect()->connect(socket_desc, (struct sockaddr*)&server_addr,sizeof(server_addr));
+send(socket_desc,client_messsage,strlen(client_message))
+recv(socket_desc,server_message,sizeof(server_message))
