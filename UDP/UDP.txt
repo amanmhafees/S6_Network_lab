@@ -1,0 +1,13 @@
+Server
+
+socket()->
+Bind()->
+recvfrom()->recvfrom(socket_desc,client_message,sizeof(client_message),0,(struct sockassr*)&client_addr,&client_struct_length)<0
+sendto()->sendto(socket_desc,server_message,strlen(server_message),0,(struct sockaddr*)&client_addr,client_struct_length)<0
+
+
+Client
+
+socklen_t server_struct_length=sizeof(server_addr);
+socket_desc,client_message,strlen(client_message),0,(struct sockaddr*)&server_addr,&server_struct_length<0
+recvfrom(socket_desc,server_message,sizeof(server_message),0,(struct sockaddr*)&server_addr,&server_struct_length)<0
