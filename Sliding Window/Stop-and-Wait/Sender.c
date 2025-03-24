@@ -59,7 +59,7 @@ int main(void){
         if(z==-1){
             printf("Error in receiving\n");
         }
-        if(strncmp(buffer,"ACK",5)==0){
+        if(strncmp(buffer,"ACK",3)==0){
             printf("Recieved ACK %d\n",m);
         }
         m++;

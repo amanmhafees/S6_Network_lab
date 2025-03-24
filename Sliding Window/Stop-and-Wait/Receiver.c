@@ -51,7 +51,7 @@ int main(void){
             printf("Error in receiving\n");
             return -1;
         }
-        if(strncmp(buffer,"ACK",5)==0){
+        if(strncmp(buffer,"frame",5)==0){
             printf("Recieved frame %d succesfully \n",m);
         }
         else{
@@ -66,7 +66,7 @@ int main(void){
                 printf("Waiting for %d seconds\n",p);
 
             }
-            printf("Retransmitting frame %d\n",m);
+            printf("Retransmitting ack %d\n",m);
             strcpy(buffer,"ack");
             sleep(3);
         }

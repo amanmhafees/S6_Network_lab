@@ -44,4 +44,5 @@ int main(void){
     printf("Message from client: %s\n",client_message);
     close(socket_desc);
     
+    return 0;
 }
