@@ -14,7 +14,7 @@ void func(int sock_desc,int num_frame,int window_size){
 
     char buffer[8000];
     int ack=-1,i=0,n,k,w1=0,w2=w-1,j,count_ack=0,flag=0;
-    if(setsockopt(sock_desc,SOL_SOCKET,SOL_RCVTIMEO,(char*)&timeout,sizeof(timeout))<0){
+    if(setsockopt(sock_desc,SOL_SOCKET,SO_RCVTIMEO,(char*)&timeout,sizeof(timeout))<0){
         perror("setsockopt(SO_RCVTIMEO) failed");
         return;
     }
@@ -54,7 +54,7 @@ void func(int sock_desc,int num_frame,int window_size){
             }
             else if(ack==-1){
                 printf("Acknowledgement not received for %d\nResending frame\n",w1);
-                bzero(buff,sizeof(buffer));
+                bzero(buffer,sizeof(buffer));
                 snprintf(buffer,sizeof(buffer),"%d",w1);
                 k=send(sock_desc,buffer,sizeof(buffer),0);
                 printf("Frame %d sent\n",w1);
@@ -97,5 +97,5 @@ int main(void){
     scanf("%d", &window_size);
 
     func(sock_desc,num_frames,window_size);
-    close(sockfd);
+    close(sock_desc);
 }

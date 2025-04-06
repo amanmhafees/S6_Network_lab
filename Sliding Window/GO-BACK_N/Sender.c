@@ -20,7 +20,7 @@ void send_frames(int sock_desc, int num_frames, int window_size) {
         return;
     }
 
-    for (i = 0; i < num_frames && i <= window_size; i++) {
+    for (i = 0; i < num_frames && i < window_size; i++) {
         bzero(buffer, sizeof(buffer));
         snprintf(buffer, sizeof(buffer), "%d", i);
         k = send(sock_desc, buffer, sizeof(buffer), 0);
