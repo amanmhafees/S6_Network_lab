@@ -2,21 +2,20 @@
 #include<stdlib.h>
 #include<string.h>
 #include<unistd.h>
-#include<arpa/inet.h>
 #include<sys/socket.h>
+#include<arpa/inet.h>
 
 int main(void){
-    int socket_desc;
+    int socket_desc,client_sock,client_size;
     struct sockaddr_in server_addr,client_addr;
     char server_message[2000],client_message[2000];
-    socklen_t server_struct_length=sizeof(server_addr);
 
     memset(server_message,'\0',sizeof(server_message));
     memset(client_message,'\0',sizeof(client_message));
 
-    //socket creation
+    //creating socket
+    socket_desc=socket(AF_INET,SOCK_STREAM,0);
 
-    socket_desc=socket(AF_INET,SOCK_DGRAM,0);
     if(socket_desc<0){
         printf("Error while creating socket\n");
         return -1;
@@ -27,24 +26,32 @@ int main(void){
     server_addr.sin_port=htons(2000);
     server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
 
+    if(connect(socket_desc,(struct sockaddr*)&server_addr,sizeof(server_addr))<0){
+        printf("Connection Failed\n");
+        return -1;
+    }
+    printf("Connection to server succesful\n");
 
-
-    printf("Enter the client message: ");
+    printf("\nEnter the client message : ");
     scanf("%s",client_message);
 
-    if(sendto(socket_desc,client_message,strlen(client_message),0,(struct sockaddr*)&server_addr,server_struct_length)<0){
-        printf("\nCan't send\n");
+    if(send(socket_desc,client_message,sizeof(client_message),0)<0){
+        printf("\nCan't Send\n");
         return -1;
-
     }
 
-    printf("Message to Server Send\n");
-        if(recvfrom(socket_desc,server_message,sizeof(server_message),0,(struct sockaddr*)&server_addr,&server_struct_length)<0){
+    if(recv(socket_desc,server_message,sizeof(server_message),0)<0){
         printf("Can't receive\n");
         return -1;
     }
-    printf("\nThe server message is : %s\n",server_message);
+    printf("The server Message is:\n");
+    printf(server_message);
+    printf("\n");
+
 
     close(socket_desc);
-    return 0;
+
+
+
+    
 }
