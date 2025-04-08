@@ -2,20 +2,21 @@
 #include<stdlib.h>
 #include<string.h>
 #include<unistd.h>
-#include<sys/socket.h>
 #include<arpa/inet.h>
+#include<sys/socket.h>
 
 int main(void){
-    int socket_desc,client_sock,client_size;
+    int socket_desc;
     struct sockaddr_in server_addr,client_addr;
     char server_message[2000],client_message[2000];
+    socklen_t client_struct_length=sizeof(client_addr);
 
     memset(server_message,'\0',sizeof(server_message));
     memset(client_message,'\0',sizeof(client_message));
 
-    //creating socket
-    socket_desc=socket(AF_INET,SOCK_STREAM,0);
+    //socket creation
 
+    socket_desc=socket(AF_INET,SOCK_DGRAM,0);
     if(socket_desc<0){
         printf("Error while creating socket\n");
         return -1;
@@ -29,42 +30,28 @@ int main(void){
     if(bind(socket_desc,(struct sockaddr*)&server_addr,sizeof(server_addr))<0){
         printf("Binding failed\n");
         return -1;
-    }    
+    }
     printf("Binding successful\n");
 
-    if(listen(socket_desc,0)<0){
-        printf("Error while listening\n");
-        return -1;
-    }
-    printf("Listening for incoming connections...................................\n");
+    printf("Listening for incoming messages\n");
 
-    client_size=sizeof(client_addr);
-    client_sock=accept(socket_desc,(struct sockaddr*)&client_addr,&client_size);
-
-    if(client_sock<0){
-        printf("Can't Accpet\n");
-        return -1;
-    }
-    printf("Connection accepted\n");
-
-    if(recv(client_sock,client_message,sizeof(client_message),0)<0){
+    if(recvfrom(socket_desc,client_message,sizeof(client_message),0,(struct sockaddr*)&client_addr,&client_struct_length)<0){
         printf("Can't receive\n");
         return -1;
     }
-    printf("The client Message is:\n");
-    printf(client_message);
+    printf("The client message is : %s\n",client_message);
 
-    printf("\nEnter the server message : ");
+    printf("Enter the server message: ");
     scanf("%s",server_message);
 
-    if(send(client_sock,server_message,sizeof(server_message),0)<0){
-        printf("\nCan't Send\n");
+    if(sendto(socket_desc,server_message,sizeof(server_message),0,(struct sockaddr*)&client_addr,client_struct_length)<0){
+        printf("\nCan't send\n");
         return -1;
+
     }
 
-    close(socket_desc);
-     close(client_sock);
+    printf("Message to Client Send");
 
+    close(socket_desc);
     return 0;
-    
 }
