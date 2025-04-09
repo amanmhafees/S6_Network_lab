@@ -20,14 +20,14 @@ void func(int socket_desc,int nf,int ws){
         perror("setsockopt(SO_RCVTIMEO) failed\n");
         return;
     }
-    for(i=w1;i<=w2-1 && i<nf; i++){
+    for(i=w1;i<=w2 && i<nf; i++){
         bzero(buffer,MAX);
         snprintf(buffer,MAX,"%d",i);
         send(socket_desc,buffer,strlen(buffer),0);
         printf("Frame %d sent\n",i);
     }
     while(1){
-        if(w2-w1!=ws && flag==0 && i!=nf){
+        if(w2-w1!=ws-1 && flag==0 && i!=nf){
             bzero(buffer,MAX);
             snprintf(buffer,MAX,"%d",i);
             send(socket_desc,buffer,strlen(buffer),0);
@@ -54,7 +54,7 @@ void func(int socket_desc,int nf,int ws){
         }
         else{
             printf("Acknowledgement not received for %d\nResending framess\n",w1);
-            for(i=w1;i<=w2-1 && i<nf; i++){
+            for(i=w1;i<=w2 && i<nf; i++){
                 bzero(buffer,MAX);
                 snprintf(buffer,MAX,"%d",i);
                 send(socket_desc,buffer,MAX,0);
