@@ -1,99 +1,102 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/socket.h>
+#include<arpa/inet.h>
+#include<time.h>
+#include<sys/time.h>
+#include<sys/types.h>
+#include<netinet/in.h>
+#define MAX 80
+struct timeval timeout;
 
-#define PORT 2000
 
-void send_frames(int sock_desc, int num_frames, int window_size) {
-    char buffer[2000];
-    int ack = -1, i = 0, j, k, n, w1 = 0, w2 = window_size - 1, flag = 0;
-    struct timeval timeout;
+void func(int socket_desc,int nf,int ws){
+    char buffer[MAX];
+    int i=0,j,ack,w1=0,w2=ws-1,flag=0,n;
 
-    timeout.tv_sec = 5;
-    timeout.tv_usec = 0;
-
-    if (setsockopt(sock_desc, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout)) < 0) {
-        perror("setsockopt(SO_RCVTIMEO) failed");
+    if(setsockopt(socket_desc,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))<0){
+        perror("setsockopt(SO_RCVTIMEO) failed\n");
         return;
     }
-
-    for (i = 0; i < num_frames && i < window_size; i++) {
-        bzero(buffer, sizeof(buffer));
-        snprintf(buffer, sizeof(buffer), "%d", i);
-        k = send(sock_desc, buffer, sizeof(buffer), 0);
-        printf("Frame %d sent\n", i);
+    for(i=w1;i<=w2-1 && i<nf; i++){
+        bzero(buffer,MAX);
+        snprintf(buffer,MAX,"%d",i);
+        send(socket_desc,buffer,strlen(buffer),0);
+        printf("Frame %d sent\n",i);
     }
-
-    while (1) {
-        if (w2 - w1 != window_size - 1 && flag == 0 && i != num_frames) {
-            bzero(buffer, sizeof(buffer));
-            snprintf(buffer, sizeof(buffer), "%d", i);
-            k = send(sock_desc, buffer, sizeof(buffer), 0);
-            printf("Frame %d sent\n", i);
+    while(1){
+        if(w2-w1!=ws && flag==0 && i!=nf){
+            bzero(buffer,MAX);
+            snprintf(buffer,MAX,"%d",i);
+            send(socket_desc,buffer,strlen(buffer),0);
+            printf("Frame %d sent\n",i);
             w2++;
             i++;
         }
-        flag = 0;
-        bzero(buffer, sizeof(buffer));
-        n = recv(sock_desc, buffer, sizeof(buffer), 0);
-        if (n > 0) {
-            ack = atoi(buffer);
-            if (ack + 1 == num_frames) {
-                printf("Acknowledgement %d received\nExit\n", ack);
-                bzero(buffer, sizeof(buffer));
-                strcpy(buffer, "Exit");
-                k = send(sock_desc, buffer, sizeof(buffer), 0);
+        flag=0;
+        bzero(buffer,MAX);
+        n=recv(socket_desc,buffer,MAX,0);
+        ack=atoi(buffer);
+        if(n>0){
+            if(ack+1==nf){
+                printf("Acknowledgement received : %d\nExit\n\n",ack);
+                bzero(buffer,MAX);
+                strcpy(buffer,"Exit");
+                send(socket_desc,buffer,MAX,0);
                 break;
             }
-            if (ack >= w1) {
-                w1 = ack + 1;
-                printf("Acknowledgement %d received\n", ack);
+            if(ack==w1){
+                w1++;
+                printf("Acknowledgement received %d\n",ack);
             }
-        } else {
-            printf("Acknowledgement not received for %d\nResending Frames\n", w1);
-            for (j = w1; j < num_frames && j <= w1 + window_size - 1; j++) {
-                bzero(buffer, sizeof(buffer));
-                snprintf(buffer, sizeof(buffer), "%d", j);
-                k = send(sock_desc, buffer, sizeof(buffer), 0);
-                printf("Frame %d sent\n", j);
+        }
+        else{
+            printf("Acknowledgement not received for %d\nResending framess\n",w1);
+            for(i=w1;i<=w2-1 && i<nf; i++){
+                bzero(buffer,MAX);
+                snprintf(buffer,MAX,"%d",i);
+                send(socket_desc,buffer,MAX,0);
+                printf("Frame %d sent\n",i);   
             }
-            flag = 1;
+            flag=1;
         }
     }
+
 }
 
-int main() {
-    int sock_desc, num_frames, window_size;
-    struct sockaddr_in server_addr;
+int  main(void){
+    int socket_desc,nf,ws;
+    struct sockaddr_in server_addr,client_addr;
 
-    printf("Enter the number of frames to be sent: ");
-    scanf("%d", &num_frames);
-    printf("Enter the window size: ");
-    scanf("%d", &window_size);
-
-    sock_desc = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock_desc < 0) {
+    socket_desc=socket(AF_INET,SOCK_STREAM,0);
+    if(socket_desc<0){
         printf("Error while creating socket\n");
         return -1;
     }
-    printf("Socket successfully created\n");
+    printf("Socket created successfully\n");
 
-    bzero(&server_addr, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT);
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server_addr.sin_family=AF_INET;
+    server_addr.sin_port=htons(2000);
+    server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
 
-    if (connect(sock_desc, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        printf("Error in connecting\n");
+    timeout.tv_sec=3;
+    timeout.tv_usec=5;
+
+    if(connect(socket_desc,(struct sockaddr*)&server_addr,sizeof(server_addr))<0){
+        printf("Connection failed\n");
         return -1;
     }
-    printf("Connected to the server\n");
+    printf("Connected successfully\n");
+        printf("Enter the number of frames: ");
+    scanf("%d",&nf);
+    printf("Enter the window size: ");
+    scanf("%d",&ws);
 
-    send_frames(sock_desc, num_frames, window_size);
+    func(socket_desc,nf,ws);
 
-    close(sock_desc);
+    close(socket_desc);
     return 0;
+
 }
